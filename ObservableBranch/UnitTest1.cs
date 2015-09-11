@@ -46,18 +46,58 @@ namespace ObservableBranch
 
     public class ObservablePropertyBranch : IObservable<object>
     {
+        private readonly INotifyPropertyChanged owner;
         private ObservableProperty observableProperty;
+        private ObservablePropertyBranch child;
 
-        public ObservablePropertyBranch Create(INotifyPropertyChanged root, string path)
+        public ObservablePropertyBranch(INotifyPropertyChanged owner, string propertyName)
         {
-            
+            this.owner = owner;
+            Property = new ObservableProperty(owner, propertyName);
+        }
+
+        public ObservablePropertyBranch Child
+        {
+            get { return child; }
+            set { child = value; }
+        }
+
+        public ObservableProperty Property
+        {
+            get { return observableProperty; }
+            set { observableProperty = value; }
         }
 
         public IDisposable Subscribe(IObserver<object> observer)
         {
             throw new NotImplementedException();
         }
+    }
 
+    public static class ObservablePropertyMixin
+    {
+        public static ObservablePropertyBranch Join(this ObservablePropertyBranch parent, string propertyName)
+        {
+            var value = (INotifyPropertyChanged) parent.Property.Value;
+            parent.Child = new ObservablePropertyBranch(value, propertyName);
+            return parent;
+        }
+
+        public static ObservablePropertyBranch CreateObservablePropertyBranch(this INotifyPropertyChanged parent, string path)
+        {
+            var parts = path.Split('.');
+
+            var first = parts.First();
+            var rest = parts.Skip(1);
+
+            var branch = new ObservablePropertyBranch(parent, first);
+            foreach (var part in rest)
+            {                
+                branch.Join(part);
+            }
+
+            return branch;
+        }
     }
 
 
