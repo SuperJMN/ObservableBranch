@@ -31,5 +31,18 @@
 
             Assert.AreEqual("Hello world", actualText);
         }
+
+        [TestMethod]
+        public void GivenSubscriptionToTwoLevelPath_WhenRootChanges_NotificationsShouldArrive()
+        {
+            var changeSource = new DummyViewModel { Child = new DummyViewModel() { Text = "Old text" } };
+            var sut = new ObservablePropertyChain(changeSource, "Child.Text");
+            object actualText = null;
+
+            sut.Subscribe(o => actualText = o);
+            changeSource.Child = new DummyViewModel { Text = "This is the real thing" };
+
+            Assert.AreEqual("This is the real thing", actualText);
+        }
     }
 }
