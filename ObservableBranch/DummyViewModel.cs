@@ -4,6 +4,7 @@
     {
         private int number;
         private DummyViewModel child;
+        private string text;
 
         public int Number
         {
@@ -29,6 +30,20 @@
                     return;
                 }
                 child = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Text
+        {
+            get { return text; }
+            set
+            {
+                if (value == text)
+                {
+                    return;
+                }
+                text = value;
                 OnPropertyChanged();
             }
         }

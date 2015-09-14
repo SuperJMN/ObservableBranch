@@ -10,11 +10,26 @@
         public void SubscriptionToOneLevelPath()
         {
             var changeSource = new DummyViewModel();
-            var observablePropertyBranch = new ObservablePropertyChain(changeSource, "Number");
-            object actual = null;            
-            observablePropertyBranch.Subscribe(o => actual = o);
-            changeSource.Number = 11;
-            Assert.AreEqual(11, actual);
+            var sut = new ObservablePropertyChain(changeSource, "Text");
+            object actualText = null;
+
+            sut.Subscribe(o => actualText = o);
+            changeSource.Text = "Hello world";
+
+            Assert.AreEqual("Hello world", actualText);
+        }
+
+        [TestMethod]
+        public void SubscriptionToTwoLevelPath()
+        {
+            var changeSource = new DummyViewModel { Child = new DummyViewModel() };
+            var sut = new ObservablePropertyChain(changeSource, "Child.Text");
+            object actualText = null;
+
+            sut.Subscribe(o => actualText = o);
+            changeSource.Child.Text = "Hello world";
+
+            Assert.AreEqual("Hello world", actualText);
         }
     }
 }
