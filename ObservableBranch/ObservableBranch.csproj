@@ -66,9 +66,13 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="DummyViewModel.cs" />
+    <Compile Include="ObservableProperty.cs" />
+    <Compile Include="ObservablePropertyChain.cs" />
     <Compile Include="Properties\Annotations.cs" />
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="ObservablePropertyChainTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
