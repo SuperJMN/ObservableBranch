@@ -3,7 +3,9 @@ namespace ObservableBranch
     using System;
     using System.ComponentModel;
     using System.Linq;
+    using System.Reactive.Disposables;
     using System.Reactive.Linq;
+    using System.Reactive.Subjects;
     using System.Runtime.InteropServices;
 
     public class ObservablePropertyChain : IObservable<object>
@@ -13,7 +15,8 @@ namespace ObservableBranch
         private ObservablePropertyChain child;
         private readonly ObservableProperty property;
         private readonly string restOfPath;
-        private IObservable<object> observable;
+        private IDisposable childChanged;
+        private ISubject<object> subject = new Subject<object>();
 
         public ObservablePropertyChain(INotifyPropertyChanged owner, string path)
         {
@@ -25,8 +28,18 @@ namespace ObservableBranch
 
             SetChild();
 
-            observable = child != null ? property.Merge(child) : property;
+            property.Subscribe(OnNewValue);
         }
+
+        private void OnNewValue(object o)
+        {
+            SetChild();
+
+            subject.OnNext(Value);
+        }
+
+        public object Value => child != null ? child.Value : property.Value;
+
 
         public string Path
         {
@@ -36,16 +49,23 @@ namespace ObservableBranch
         private void SetChild()
         {
             var notifyPropertyChanged = property.Value as INotifyPropertyChanged;
+            childChanged?.Dispose();
 
             if (notifyPropertyChanged != null && restOfPath.Length > 0)
             {
                 this.child = new ObservablePropertyChain(notifyPropertyChanged, restOfPath);
+                this.childChanged = child.Subscribe(OnChildValueChanged);
             }
+        }
+
+        private void OnChildValueChanged(object o)
+        {
+            subject.OnNext(o);
         }
 
         public IDisposable Subscribe(IObserver<object> observer)
         {
-            return observable.Subscribe(observer);
+            return subject.Subscribe(observer);
         }
     }
 }
