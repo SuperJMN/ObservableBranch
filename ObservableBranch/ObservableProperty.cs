@@ -25,6 +25,7 @@
                 p => notifySource.PropertyChanged -= p)
                 .Where(pattern => pattern.EventArgs.PropertyName == propertyName)
                 .Select(_ => Value)
+                .Distinct()
                 .Subscribe(observer);
         }
 
