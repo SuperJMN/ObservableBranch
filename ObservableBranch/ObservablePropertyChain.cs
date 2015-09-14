@@ -12,6 +12,7 @@ namespace ObservableBranch
         private readonly ISubject<object> subject = new Subject<object>();
         private ObservablePropertyChain child;
         private IDisposable childChanged;
+        private object previousValue;
 
         public ObservablePropertyChain(INotifyPropertyChanged owner, string path)
         {
@@ -22,6 +23,7 @@ namespace ObservableBranch
 
             UpdateChild();
 
+            previousValue = Value;
             property.Subscribe(OnNewPropertyValue);
         }
 
@@ -34,9 +36,21 @@ namespace ObservableBranch
 
         private void OnNewPropertyValue(object o)
         {
-            UpdateChild();         
-            subject.OnNext(Value);
+            UpdateChild();
+            PushValue();
         }
+
+        private void PushValue()
+        {
+            if (PreviousAndNewValuesAreDifferent)
+            {
+                subject.OnNext(Value);
+            }
+
+            previousValue = Value;
+        }
+
+        private bool PreviousAndNewValuesAreDifferent => !Equals(previousValue, Value);        
 
         private void UpdateChild()
         {
@@ -51,8 +65,8 @@ namespace ObservableBranch
         }
 
         private void OnNewChildValue(object o)
-        {
-            subject.OnNext(o);
+        {            
+            PushValue();
         }
     }
 }
